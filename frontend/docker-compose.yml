@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Development service
+  license-plate-app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: license-plate-app-dev
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    command: bun run dev
+    restart: unless-stopped
+
+  # Production service
+  license-plate-app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: license-plate-app-prod
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
