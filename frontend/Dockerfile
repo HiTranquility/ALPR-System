@@ -4,7 +4,7 @@
 # Stage 1: Build ứng dụng
 FROM oven/bun:latest as build
 
-WORKDIR /app
+WORKDIR /src
 
 # Sao chép package.json và bun.lock để tối ưu layer caching
 COPY package.json bun.lock* ./
