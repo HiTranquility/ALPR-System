@@ -38,6 +38,7 @@ export function LicensePlateSearch() {
     }
   };
 
+
   // Lấy dữ liệu hiển thị dựa trên chế độ xem
   const displayData = viewMode === "search"
     ? searchResults
@@ -73,7 +74,9 @@ export function LicensePlateSearch() {
                   <TableHead className="w-32">Ảnh biển số</TableHead>
                   <TableHead>Biển số xe</TableHead>
                   <TableHead>Thời gian nhận diện</TableHead>
-                  <TableHead className="text-right">Tốc độ xử lý</TableHead>
+                  <TableHead>Tốc độ xử lý</TableHead>
+                  <TableHead className="text-right">Bạn có muốn xóa không?</TableHead>
+
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -94,8 +97,15 @@ export function LicensePlateSearch() {
                       {item.licensePlate || "N/A"}
                     </TableCell>
                     <TableCell>{item.detectionTime || "N/A"}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell>
                       {item.processingSpeed ? `${item.processingSpeed} ms` : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end">
+                        <Button variant="destructive" /*onClick={() => handleDelete(plateId)} */>
+                          Xóa
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
