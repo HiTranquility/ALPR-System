@@ -1,0 +1,99 @@
+Quy trình luồng xủ lý, chủ yếu tạo service để trị cái này (Có thể rút kinh nghiệm)
+1. Upload_One_Image
+Gọi ra hai hàm
+- process_image: Ở đây xử lý 2 việc và dùng hàm alpr_engine để tách ảnh crop, sau đó generate URL để lưu db, lưu vào file static ảnh gốc và crop (để sau này hiện thị trên frontend)
+- create_record: Cái này đơn giản nhận mấy cái url (để sau này read_plate_number nó biết đường mà lần)
+- Trả về thống nhất đề là 1 PlateResponse
+2. Upload_Many_Images
+- Cũng như trên, mà ta trả về cái mảng thôi (câu chuyện này thôi nguy hiểm, có nên bọc lại để xử lý frontend ko?)
+
+3. Find_Image 
+- Ở đây khá đầy đủ, nhưng mà lưu ý nó đọc đường dẫn => ta cần làm 2 việc 
+ * Ở frontend nó hiện ra cái ảnh cropped đầy đủ, nguyên vẹn à nha
+ * Tìm là nó lấy cái url nó so rồi nó lấy trong static/crop để nó trả về frontend à (cái này đang hết cứu, không biết xử lý làm sao)
+
+4. Get_All_Images
+- Hiện tại thì chỉ nhận size thôi, tương lai là phải làm ra một request dành riêng cho phân trang (SEO: page, size, keyword,...)
+
+5. Delete_Image
+- Chỉ truyền vào string, nhưng tương lai có thể nâng cấp truyền vào một request để xóa mà cân nhắc nhiều thứ
+
+Vấn đề khác là ta chưa có một cái nhìn rõ về python => Đặt tên, class sai tùm lum tùm la + với làm _init_ cẩu tả
+Những cái liên quan đến gọi hàm, optional vẫn quá yếu => Cần bổ sung thêm!
+Bây giờ bài toán cần xử lý là trả lên frontend cái bytes rồi nó tự xử lý hay sao? => ta cần làm 2 việc 
+ * Ở frontend nó hiện ra cái ảnh cropped đầy đủ, nguyên vẹn à nha
+ * Tìm là nó lấy cái url nó so rồi nó lấy trong static/crop để nó trả về frontend à (cái này đang hết cứu, không biết xử lý làm sao)
+ => Nếu không được thì đi tìm giải pháp giải quyết cái này!
+
+ ✅ Sửa lại hàm save_bytes_image(...) để dùng path nội bộ:
+import os
+
+def save_bytes_image(image_bytes: bytes, file_path: str):
+    """
+    Lưu ảnh bytes vào đường dẫn thực tế (nội bộ).
+    Ví dụ: static/cropped/abc.jpg
+    """
+    # Đảm bảo thư mục tồn tại
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    # Ghi file
+    with open(file_path, "wb") as f:
+        f.write(image_bytes)
+📌 Cách dùng:
+file_path = f"static/cropped/{plate_number}.jpg"
+save_bytes_image(crop_bytes, file_path)
+👉 Không còn dùng /static/... dạng URL ở đây nữa. Đây là path thật để ghi file.
+
+Nếu bạn vẫn cần image_url để trả về frontend:
+Bạn chỉ cần tạo thủ công:
+
+image_url = f"/static/cropped/{plate_number}.jpg"
+✅ Kết quả:
+
+Ghi đúng vào static/cropped/
+
+Không phụ thuộc vào url_path.strip("/")
+
+Tự động tạo thư mục nếu chưa có
+
+
+Khi nào ta mới dùng đến PlateRequest kiểu class (from body), khi nào ta mới truyền thằng vào như vầy (From Query)?
+
+✅ Khi nào dùng PlateRequest (class, Body)?
+🔹 Dùng khi:
+Bạn truyền dữ liệu dạng JSON phức tạp (nhiều trường, hoặc có nested field).
+
+Dữ liệu được gửi trong phần thân (body) của request, thường là trong POST/PUT/PATCH.
+
+Khi bạn muốn tái sử dụng cấu trúc input nhiều lần hoặc kiểm tra schema.
+
+🧠 Ví dụ:
+python
+Sao chép mã
+class PlateRequest(BaseModel):
+    plate_number: str
+    timestamp: Optional[str]
+    location: Optional[str]
+
+@router.post("/check")
+async def check_plate(data: PlateRequest):  # Dữ liệu lấy từ Body
+    ...
+✅ Khi nào dùng From Query, From Path, From Header?
+🔹 Dùng khi:
+Dữ liệu là tham số đơn giản (str, int, bool...), dễ gán trực tiếp.
+
+Dữ liệu nằm trên URL (query string) hoặc đường dẫn, thường dùng với GET method.
+
+Dữ liệu cần dễ dàng test/truy cập qua trình duyệt hoặc curl.
+
+🧠 Ví dụ:
+@router.get("/search")
+async def search_plate(plate_number: str = Query(...), date: Optional[str] = Query(None)):
+    ...
+🔁 So sánh nhanh
+Thuộc loại	Từ Body (PlateRequest)	Từ Query/Path/Header
+Dùng khi	Nhiều field, cấu trúc phức tạp	Tham số đơn giản, lọc
+Method thường dùng	POST, PUT, PATCH	GET, DELETE
+Truy cập từ client	Gửi JSON	Gửi URL query/path
+Ưu điểm	Gọn gàng, dễ validate	Dễ test, dùng trình duyệt
+
