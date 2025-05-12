@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Explicitly allow these files
+!nginx.conf
+!Dockerfile
+!Dockerfile.dev
