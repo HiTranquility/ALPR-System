@@ -11,12 +11,6 @@ build
 out
 coverage
 
-# Docker related
-Dockerfile
-Dockerfile.dev
-docker-compose.yml
-.dockerignore
-
 # Git related
 .git
 .gitignore
