@@ -1,19 +1,22 @@
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Cài các thư viện hệ thống cần thiết
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    libgl1 \
+    libgl1-mesa-glx \
     libglib2.0-0 \
-    && apt-get clean
+    && rm -rf /var/lib/apt/lists/*
 
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
 COPY . .
 
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# Expose the port the app runs on
+EXPOSE 8000
 
-# Hoặc cài thủ công:
-RUN pip install fastapi uvicorn[standard] python-dotenv mysql-connector-python
-
-CMD ["python", "main.py"]
+# Command to run the application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

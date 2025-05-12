@@ -22,14 +22,14 @@ async def upload_plate(file: UploadFile = File(...)):
         return {
             "success": True,
             "total": 1,
-            "message": "Tải ảnh thành công",
+            "message": "Image uploaded successfully",
             "data": [PlateResponse(**result)]
         }
     except Exception as e:
         return {
             "success": False,
             "total": 0,
-            "message": f"Xử lý ảnh thất bại: {e}",
+            "message": f"Image processing failed: {e}",
             "data": []
         }
 
@@ -40,7 +40,7 @@ async def upload_many_plates(files: List[UploadFile] = File(...)):
         return {
             "success": False,
             "total": 0,
-            "message": "Không có file nào được tải lên.",
+            "message": "No files were uploaded.",
             "data": []
         }
     results = []
@@ -59,14 +59,14 @@ async def upload_many_plates(files: List[UploadFile] = File(...)):
             return {
                 "success": False,
                 "total": 0,
-                "message": f"Xử lý ảnh thất bại: {e}",
+                "message": f"Image processing failed: {e}",
                 "data": []
             }
 
     return {
         "success": True,
         "total": len(results),
-        "message": "Tải nhiều ảnh thành công",
+        "message": "Multiple images uploaded successfully",
         "data": results
     }
 
@@ -78,23 +78,23 @@ async def find_plate(
     detected_at: Optional[str] = None,
     left_at: Optional[str] = None
 ):
-    plate = PlateService.find_by_request(
+    plates = PlateService.find_by_request(
         plate_number=plate_number,
         source=source,
         detected_at=detected_at,
         left_at=left_at
     )
-    if plate:
+    if plates:
         return {
             "success": True,
-            "total": 1,
-            "message": f"Tìm thấy biển số {plate_number}",
-            "data": [plate]
+            "total": len(plates),
+            "message": f"Found {len(plates)} record(s) for plate number {plate_number}",
+            "data": plates
         }
     return {
         "success": False,
         "total": 0,
-        "message": f"Không tìm thấy biển số {plate_number}",
+        "message": f"No records found for plate number {plate_number}",
         "data": []
     }
 
@@ -107,20 +107,20 @@ async def get_all_plates(size: int = Query(..., ge=1)):
             return {
                 "success": True,
                 "total": 0,
-                "message": "Hiện tại database đang trống",
+                "message": "Database is currently empty",
                 "data": []
             }
         return {
             "success": True,
             "total": len(plates),
-            "message": "Lấy tất cả biển số thành công",
+            "message": "Successfully retrieved all plate numbers",
             "data": plates
         }
     except Exception as e:
         return {
             "success": False,
             "total": 0,
-            "message": f"Lỗi khi lấy tất cả biển số: {e}",
+            "message": f"Error retrieving plate numbers: {e}",
             "data": []
         }
 
@@ -133,20 +133,20 @@ async def delete_plate(plate_number: str):
             return {
                 "success": True,
                 "total": 1,
-                "message": f"Biển số {plate_number} đã được xóa thành công",
+                "message": f"Plate number {plate_number} deleted successfully",
                 "data": []
             }
         else:
             return {
                 "success": False,
                 "total": 0,
-                "message": f"Biển số {plate_number} không tồn tại",
+                "message": f"Plate number {plate_number} does not exist",
                 "data": []
             }
     except Exception as e:
         return {
             "success": False,
             "total": 0,
-            "message": f"Lỗi khi xóa biển số {plate_number}: {e}",
+            "message": f"Error deleting plate number {plate_number}: {e}",
             "data": []
         }

@@ -52,8 +52,9 @@ class PlateRepo:
             sql += " AND left_at = %s"
             params.append(left_at)
 
-        sql += " LIMIT 1"
-        return fetch_one(sql, tuple(params))
+        # Order by detected_at DESC to get most recent records first
+        sql += " ORDER BY detected_at DESC"
+        return fetch_all(sql, tuple(params))
 
     @staticmethod
     def get_all(size: int):

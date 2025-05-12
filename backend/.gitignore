@@ -1,4 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 .env
-node_modules
-.__pycache__
-.pycache
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+log/
+
+# Database
+*.sqlite3
+*.db
+backup_*.sql
+
+# Model files
+*.pt
+*.pth
+*.weights
+*.h5
+*.hdf5
+*.onnx
+
+# Temporary files
+*.tmp
+*.temp
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Uploaded files
+uploads/
+static/uploads/
+media/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# System Files
+.DS_Store
+Thumbs.db

@@ -1,3 +1,86 @@
+# License Plate Recognition (ALPR) System
+
+This document describes the license plate recognition process implemented in the ALPR system.
+
+## Overview
+
+The ALPR (Automatic License Plate Recognition) system uses a combination of computer vision and OCR techniques to detect and read license plates from images. The system is built using Python and leverages several key technologies:
+
+- YOLO (You Only Look Once) for license plate detection
+- EasyOCR for text recognition
+- OpenCV for image processing
+
+## Recognition Process
+
+The license plate recognition process follows these steps:
+
+1. **Image Input**
+   - The system accepts image input in bytes format
+   - Converts the input to OpenCV format for processing
+
+2. **Initial OCR**
+   - Performs OCR on the full original image
+   - This serves as a baseline for text recognition
+
+3. **License Plate Detection**
+   - Uses YOLO model to detect license plate location in the image
+   - Returns bounding box coordinates and cropped plate image
+
+4. **Image Validation**
+   - Validates the cropped image based on:
+     - Minimum width and height requirements
+     - Aspect ratio constraints
+     - Brightness levels
+   - Ensures the image is suitable for OCR processing
+
+5. **Image Enhancement** (if needed)
+   - If the cropped image doesn't meet validation criteria, applies enhancement:
+     1. Resizes small images while maintaining aspect ratio
+     2. Converts to grayscale
+     3. Applies bilateral filtering to reduce noise while preserving edges
+     4. Enhances contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+     5. Sharpens the image using a custom kernel
+
+6. **Text Recognition**
+   - Performs OCR on the processed image
+   - Cleans and standardizes the recognized text:
+     - Converts to uppercase
+     - Removes special characters
+     - Keeps only alphanumeric characters, hyphens, and dots
+
+7. **Result Selection**
+   - Compares results from different processing stages
+   - Selects the best result based on text length and quality
+   - Returns the processed image and recognized plate number
+
+## Error Handling
+
+The system includes robust error handling:
+- Falls back to original image processing if plate detection fails
+- Validates image quality at multiple stages
+- Provides clear error messages for debugging
+
+## Performance Considerations
+
+- Processing time is measured and included in the results
+- Image enhancement is only applied when necessary
+- Multiple OCR attempts are made to ensure accuracy
+
+## Dependencies
+
+- OpenCV (cv2)
+- NumPy
+- EasyOCR
+- Ultralytics YOLO
+- PIL (Python Imaging Library)
+
+## Usage
+
+The main entry point is the `run_alpr()` function, which takes image bytes as input and returns:
+- Processed image bytes
+- Recognized plate number
+- Processing time
+
 # 🚗 Automatic License Plate Recognition (ALPR)
 
 ## 📌 Mục tiêu

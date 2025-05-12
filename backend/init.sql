@@ -1,0 +1,17 @@
+CREATE DATABASE IF NOT EXISTS alpr_db;
+USE alpr_db;
+
+CREATE TABLE IF NOT EXISTS plate_records (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    plate_number VARCHAR(20) NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    crop_image_url VARCHAR(255) NOT NULL,
+    detected_at DATETIME NOT NULL,
+    left_at DATETIME,
+    process_time FLOAT NOT NULL,
+    source VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_plate_number (plate_number),
+    INDEX idx_detected_at (detected_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
