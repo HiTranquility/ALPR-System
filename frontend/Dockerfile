@@ -7,7 +7,7 @@ FROM oven/bun:latest as build
 WORKDIR /app
 
 # Sao chép package.json và bun.lock để tối ưu layer caching
-COPY package.json bun.lock* ./
+COPY package.json bun.lock ./
 
 # Cài đặt dependencies
 RUN bun install --frozen-lockfile
@@ -22,7 +22,7 @@ RUN bun run build
 FROM nginx:alpine
 
 # Sao chép các file cấu hình nginx
-COPY ./docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Sao chép build từ stage trước vào thư mục serve của nginx
 COPY --from=build /app/dist /usr/share/nginx/html
