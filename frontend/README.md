@@ -1,101 +1,117 @@
-# ALPR System Frontend
+# Ứng dụng Nhận diện Biển số xe
 
-Frontend application for the Automatic License Plate Recognition (ALPR) System.
+Ứng dụng React hiển thị giao diện người dùng cho hệ thống nhận diện biển số xe. Ứng dụng này cho phép người dùng tải lên ảnh và xử lý chúng để trích xuất biển số xe, lưu trữ và tìm kiếm kết quả.
 
-## Prerequisites
+## Tính năng
 
-- Node.js (v16 or higher)
-- npm (v8 or higher)
-- Docker (optional, for containerized deployment)
+- Tải lên một hoặc nhiều ảnh
+- Xử lý ảnh và nhận diện biển số xe
+- Hiển thị kết quả với thông tin về biển số xe, thời gian nhận diện và tốc độ xử lý
+- Tìm kiếm biển số xe đã nhận diện
+- Xem lịch sử nhận diện
 
-## Installation
+## Cài đặt và Chạy
 
-### Local Development
+### Yêu cầu
 
-1. Clone the repository:
+- [Node.js](https://nodejs.org/) phiên bản 18+ hoặc [Bun](https://bun.sh/)
+- [Docker](https://www.docker.com/) (nếu sử dụng Docker)
+
+### Cách 1: Chạy trực tiếp
+
 ```bash
+# Clone repository
 git clone <repository-url>
-cd frontend
+cd license-plate-detection
+
+# Cài đặt dependencies
+bun install
+
+# Chạy ứng dụng ở chế độ development
+bun run dev
+
+# Build ứng dụng cho production
+bun run build
+
+# Chạy phiên bản đã build
+bun run preview
 ```
 
-2. Install dependencies:
+### Cách 2: Sử dụng Docker
+
+#### Môi trường Development
+
 ```bash
-npm install
+# Xây dựng và chạy container development
+docker-compose up license-plate-app-dev
 ```
 
-3. Create a `.env` file in the root directory and add your environment variables:
-```env
-VITE_API_URL=your_api_url
-```
+Ứng dụng sẽ khả dụng tại http://localhost:5173
 
-4. Start the development server:
+#### Môi trường Production
+
 ```bash
-npm run dev
+# Xây dựng và chạy container production
+docker-compose up license-plate-app-prod
 ```
 
-The application will be available at `http://localhost:5173`
+Ứng dụng sẽ khả dụng tại http://localhost:80
 
-### Docker Development
+#### Xây dựng và chạy riêng lẻ
 
-1. Build the development Docker image:
 ```bash
-docker build -t alpr-frontend-dev -f docker/Dockerfile.dev .
+# Xây dựng image development
+docker build -t license-plate-app:dev -f Dockerfile.dev .
+
+# Chạy container development
+docker run -p 5173:5173 -v $(pwd):/app license-plate-app:dev
+
+# Xây dựng image production
+docker build -t license-plate-app:prod .
+
+# Chạy container production
+docker run -p 80:80 license-plate-app:prod
 ```
 
-2. Run the development container:
-```bash
-docker run -p 5173:5173 -v $(pwd):/app alpr-frontend-dev
-```
+## Cấu trúc Dự án
 
-The application will be available at `http://localhost:5173` with hot-reload support.
+- `src/components/`: Các component React
+- `src/services/`: Logic xử lý ảnh và quản lý dữ liệu
+- `src/types.ts`: Các kiểu dữ liệu TypeScript
+- `docker/`: Cấu hình liên quan đến Docker
 
-### Docker Production Deployment
+## Triển khai lên Production
 
-1. Build the production Docker image:
-```bash
-docker build -t alpr-frontend .
-```
+Ứng dụng có thể được triển khai lên các nền tảng như:
 
-2. Run the production container:
-```bash
-docker run -p 80:80 alpr-frontend
-```
+- Netlify
+- Vercel
+- AWS S3 + CloudFront
+- Bất kỳ máy chủ web nào hỗ trợ nội dung tĩnh
 
-The application will be available at `http://localhost`
+### Triển khai bằng Docker
 
-## Available Scripts
+1. Xây dựng image production:
+   ```bash
+   docker build -t license-plate-app:prod .
+   ```
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
+2. Đẩy image lên container registry (Docker Hub, AWS ECR, etc.)
+   ```bash
+   docker tag license-plate-app:prod your-registry/license-plate-app:latest
+   docker push your-registry/license-plate-app:latest
+   ```
 
-## Project Structure
+3. Triển khai container trên máy chủ production của bạn
+   ```bash
+   docker run -d -p 80:80 your-registry/license-plate-app:latest
+   ```
 
-```
-frontend/
-├── src/              # Source files
-├── public/           # Static files
-├── docker/           # Docker configuration
-│   ├── Dockerfile    # Production Dockerfile
-│   └── Dockerfile.dev # Development Dockerfile
-├── .env              # Environment variables
-└── package.json      # Project dependencies
-```
+## Lưu ý
 
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| VITE_API_URL | Backend API URL | http://localhost:8000 |
-
-## Contributing
-
-1. Create a new branch for your feature
-2. Make your changes
-3. Submit a pull request
+- Hiện tại, ứng dụng mô phỏng việc xử lý ảnh bằng cách tạo dữ liệu ngẫu nhiên
+- Trong môi trường thực tế, cần tích hợp với API xử lý ảnh thực tế hoặc mô hình nhận diện biển số xe
 
 ## License
 
-[Your License]
+MIT

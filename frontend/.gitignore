@@ -1,22 +1,3 @@
-# Dependencies
-node_modules
-/.pnp
-.pnp.js
-
-# Testing
-/coverage
-
-# Production
-/dist
-/build
-
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
 # Logs
 logs
 *.log
@@ -25,6 +6,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
 
 # Editor directories and files
 .vscode/*
@@ -36,18 +22,3 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
-
-# TypeScript
-*.tsbuildinfo
-
-# Docker
-.docker
-
-# Cache
-.cache
-.eslintcache
-.stylelintcache
-
-# Misc
-.DS_Store
-Thumbs.db
