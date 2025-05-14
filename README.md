@@ -25,7 +25,7 @@ git clone <repository-url>
 cd ALPR-System/backend
 python main.py
 ```
-- API backend: http://localhost:8000/api
+- API backend: http://localhost:8000/docs
 - Giao diện web: http://localhost (nếu cấu hình nginx)
 
 ### Chạy frontend riêng (phát triển)
