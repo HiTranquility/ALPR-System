@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 
 # Cài đặt dependencies
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Sao chép toàn bộ mã nguồn
 COPY . .
