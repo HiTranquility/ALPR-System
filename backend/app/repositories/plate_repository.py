@@ -29,7 +29,7 @@ class PlateRepo:
 
     @staticmethod
     def get_plate_by_plate_number(plate_number: str):
-        query = "SELECT * FROM plate_records WHERE plate_number = %s"
+        query = "SELECT * FROM plate_records WHERE plate_number = %s LIMIT 1"
         return fetch_one(query, (plate_number,))
 
     @staticmethod
@@ -91,4 +91,14 @@ class PlateRepo:
     def delete_by_plate_number(plate_number: str) -> bool:
         query = "DELETE FROM plate_records WHERE plate_number = %s"
         return execute_non_query(query, (plate_number,))
+
+    @staticmethod
+    def get_plate_by_plate_number_and_detected_at(plate_number: str, detected_at: str):
+        query = "SELECT * FROM plate_records WHERE plate_number = %s AND detected_at = %s LIMIT 1"
+        return fetch_one(query, (plate_number, detected_at))
+
+    @staticmethod
+    def delete_by_plate_number_and_detected_at(plate_number: str, detected_at: str) -> bool:
+        query = "DELETE FROM plate_records WHERE plate_number = %s AND detected_at = %s"
+        return execute_non_query(query, (plate_number, detected_at))
 

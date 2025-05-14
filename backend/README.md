@@ -10,6 +10,28 @@ This system provides automatic license plate recognition capabilities with a RES
 
 ## Quick Start
 
+### Development Mode
+For Windows:
+```bash
+dev.bat
+```
+
+For Linux/Mac:
+```bash
+chmod +x dev.sh
+./dev.sh
+```
+
+This will:
+- Stop any running containers
+- Clean up old containers and volumes
+- Create necessary directories
+- Start the services in development mode
+- Show real-time logs
+
+The API will be available at http://localhost:8000/api
+
+### Production Mode
 1. Clone the repository:
 ```bash
 git clone <repository-url>
@@ -58,6 +80,43 @@ GET /api/plates/get-all?size=<number>
 DELETE /api/plates/delete/<plate_number>
 ```
 
+## ALPR Engine - License Plate Recognition Workflow
+
+### Overview
+The `alpr_engine` module is responsible for recognizing license plates from input images. The recognition workflow consists of the following main steps:
+
+#### 1. Image Preprocessing
+- The input image (in bytes) is converted to an OpenCV image (numpy array).
+- A quick OCR check is performed on the original image using EasyOCR to attempt to recognize the license plate.
+
+#### 2. License Plate Detection (YOLOv8)
+- The YOLOv8 model (custom-trained for license plates) is used to detect the license plate region in the image.
+- The license plate region is cropped based on the bounding box returned by YOLO.
+
+#### 3. Character Recognition (OCR)
+- If the cropped region is large and bright enough, OCR is performed directly using EasyOCR.
+- If the crop is small or of low quality, several enhancement steps are applied:
+  - Resize: Upscale the license plate image if it is too small.
+  - Grayscale: Convert to grayscale.
+  - Bilateral Filter: Denoise while preserving edges.
+  - CLAHE: Apply local contrast enhancement.
+  - Sharpen: Enhance edges using a sharpening kernel.
+  - Contrast Stretching: Normalize the image dynamic range to 0-255.
+- OCR is then performed on the enhanced image.
+
+#### 4. Post-processing Results
+- The recognized string is cleaned (keeping only A-Z, 0-9, hyphens, and dots).
+- Results from all steps (full image, crop, enhanced) are compared, and the most valid, longest, and best-formatted string is selected.
+
+#### 5. Return Results
+- The recognized license plate string, cropped image (as bytes), and processing time are returned.
+
+### Algorithms and Technologies Used
+- YOLOv8: Detects the license plate region in the image (object detection).
+- EasyOCR: Optical Character Recognition (OCR) for both Vietnamese and English.
+- Image preprocessing: Resize, Grayscale, Bilateral Filter, CLAHE, Sharpen, Contrast Stretching.
+- String post-processing: Clean up characters, validate format, select the best result.
+
 ## Deployment
 
 ### Local Development
@@ -67,12 +126,45 @@ DELETE /api/plates/delete/<plate_number>
 4. Access the API at http://localhost:8000/api
 
 ### Production Deployment
-1. Set up a server with Docker and Docker Compose installed
-2. Clone the repository to the server
-3. Update the following files for production:
-   - `docker-compose.yml`: Update environment variables
-   - `nginx.conf`: Configure SSL and domain settings
-4. Run `docker-compose up -d`
+1. **Prepare the Environment**
+   - Ensure your server has Docker and Docker Compose installed.
+   - (Recommended) Use Ubuntu 20.04+ or CentOS 7+ for the server.
+
+2. **Clone the Source Code**
+```bash
+# On your server
+sudo apt update && sudo apt install -y git
+# Clone the project
+cd /opt
+sudo git clone <repository-url> alpr-system
+cd alpr-system/backend
+```
+
+3. **Configure the Environment**
+   - Edit `docker-compose.yml` to set production passwords, database info, and volumes as needed.
+   - Edit `nginx.conf` if you want to configure a domain or SSL.
+
+4. **Download the YOLO Model**
+   - Ensure the file `app/core/best.pt` (YOLOv8 model) is present in the source. If not, copy the model to this location.
+
+5. **Start the System**
+```bash
+docker-compose up -d --build
+```
+
+6. **Verify**
+   - API: http://<server-ip>:8000/api
+   - Nginx: http://<server-ip>
+
+7. **Security**
+   - Change all default passwords in `docker-compose.yml` before deploying to production.
+   - Configure SSL for nginx if deploying in a real production environment.
+   - Open only the necessary ports (80, 8000, 3306 if you need remote DB access).
+
+8. **Backup Data**
+```bash
+docker exec alpr_db mysqldump -u root -p alpr_db > backup.sql
+```
 
 ### Database Management
 - The MySQL database is automatically initialized with the schema in `init.sql`

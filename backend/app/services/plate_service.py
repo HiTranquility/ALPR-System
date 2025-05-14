@@ -67,9 +67,9 @@ class PlateService:
         return PlateRepo.get_all(size)
     
     @staticmethod
-    def delete_record(plate_number: str) -> bool:
-        # Lấy thông tin bản ghi
-        record = PlateRepo.get_plate_by_plate_number(plate_number)
+    def delete_record(plate_number: str, detected_at: str = None) -> bool:
+        # Lấy thông tin bản ghi đúng với plate_number và detected_at
+        record = PlateRepo.get_plate_by_plate_number_and_detected_at(plate_number, detected_at)
         if not record:
             return False
 
@@ -81,5 +81,5 @@ class PlateService:
                     os.remove(file_path)
 
         # Gọi repo để xoá bản ghi trong DB
-        return PlateRepo.delete_by_plate_number(plate_number)
+        return PlateRepo.delete_by_plate_number_and_detected_at(plate_number, detected_at)
     

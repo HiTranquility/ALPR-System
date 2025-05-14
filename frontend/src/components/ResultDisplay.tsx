@@ -19,6 +19,25 @@ export function ResultDisplay({ result }: ResultDisplayProps) {
     );
   }
 
+  // Helper for original image
+  const getOriginalImageUrl = (imageUrl: string | undefined) => {
+    if (!imageUrl) return null;
+    const filename = imageUrl.split('/').pop();
+    if (!filename) return null;
+    return `http://localhost:8000/static/original/${filename}`;
+  };
+
+  // Helper for cropped image
+  const getCroppedImageUrl = (imageUrl: string | undefined) => {
+    if (!imageUrl) return null;
+    const filename = imageUrl.split('/').pop();
+    if (!filename) return null;
+    return `http://localhost:8000/static/cropped/${filename}`;
+  };
+
+  const originalImageUrl = getOriginalImageUrl(result.originalImage);
+  const croppedImageUrl = getCroppedImageUrl(result.croppedImage);
+
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
@@ -30,7 +49,7 @@ export function ResultDisplay({ result }: ResultDisplayProps) {
             <h3 className="font-semibold mb-2">Ảnh gốc</h3>
             <div className="w-full h-48 overflow-hidden rounded-md">
               <img
-                src={result.originalImage}
+                src={originalImageUrl || ''}
                 alt="Original"
                 className="w-full h-full object-contain"
               />
@@ -39,9 +58,9 @@ export function ResultDisplay({ result }: ResultDisplayProps) {
           <div>
             <h3 className="font-semibold mb-2">Biển số xe đã cắt</h3>
             <div className="w-full h-48 overflow-hidden rounded-md bg-gray-100">
-              {result.croppedImage ? (
+              {croppedImageUrl ? (
                 <img
-                  src={result.croppedImage}
+                  src={croppedImageUrl}
                   alt="Cropped plate"
                   className="w-full h-full object-contain"
                 />

@@ -125,10 +125,13 @@ async def get_all_plates(size: int = Query(..., ge=1)):
         }
 
 # ✅ Delete by plate number
-@router.delete("/delete/{plate_number}", response_model=BaseResponse)
-async def delete_plate(plate_number: str):
+@router.delete("/delete", response_model=BaseResponse)
+async def delete_plate(
+    plate_number: str = Query(...),
+    detected_at: str = Query(None)
+):
     try:
-        success = PlateService.delete_record(plate_number)
+        success = PlateService.delete_record(plate_number, detected_at)
         if success:
             return {
                 "success": True,

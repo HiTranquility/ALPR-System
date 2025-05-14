@@ -1,7 +1,14 @@
 import mysql.connector
 from mysql.connector import Error
 from contextlib import contextmanager
-from app.utils.env import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+import os
+
+# Get environment variables with development defaults
+DB_HOST = os.getenv('MYSQL_HOST', 'localhost')
+DB_PORT = int(os.getenv('MYSQL_PORT', '3306'))
+DB_USER = os.getenv('MYSQL_USER', 'root')
+DB_PASSWORD = os.getenv('MYSQL_PASSWORD', 'CaVN2004')
+DB_NAME = os.getenv('MYSQL_DATABASE', 'licenseplatedb')
 
 # 🧠 Context manager để tự động đóng kết nối
 @contextmanager

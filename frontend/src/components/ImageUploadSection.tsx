@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import type { ProcessedImage } from "@/types";
-import { processImage, addProcessedImage } from "@/services/imageService";
+import { plateService } from "@/api/plateService";
+import { toast } from "sonner";
 
 interface ImageUploadSectionProps {
   onImageProcessed: (result: ProcessedImage) => void;
@@ -16,29 +17,15 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const singleFileInputRef = useRef<HTMLInputElement>(null);
-  const multipleFileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSingleImageSelect = () => {
-    if (singleFileInputRef.current) {
-      singleFileInputRef.current.click();
+  const handleImageSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
-  const handleMultipleImageSelect = () => {
-    if (multipleFileInputRef.current) {
-      multipleFileInputRef.current.click();
-    }
-  };
-
-  const handleSingleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setSelectedImages([files[0]]);
-    }
-  };
-
-  const handleMultipleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       setSelectedImages(Array.from(files));
@@ -51,37 +38,67 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
     setIsProcessing(true);
     setProgress(0);
 
-    for (let i = 0; i < selectedImages.length; i++) {
-      try {
-        const result = await processImage(selectedImages[i]);
-        addProcessedImage(result);
-        onImageProcessed(result);
-
-        // Cập nhật tiến trình
-        const newProgress = Math.round(((i + 1) / selectedImages.length) * 100);
-        setProgress(newProgress);
-      } catch (error) {
-        console.error("Error processing image:", error);
+    try {
+      // Always use multiple image processing
+      const result = await plateService.uploadManyPlates(selectedImages);
+      
+      if (result.success) {
+        // Process each image sequentially with delay
+        for (let i = 0; i < result.data.length; i++) {
+          const item = result.data[i];
+          
+          // Update progress for current image
+          const currentProgress = ((i + 1) / result.data.length) * 100;
+          setProgress(currentProgress);
+          
+          // Create processed image data
+          const processedImage: ProcessedImage = {
+            id: Date.now().toString() + i,
+            originalImage: item.image_url,
+            croppedImage: item.crop_image_url,
+            licensePlate: item.plate_number,
+            processingSpeed: item.process_time,
+            detectionTime: item.detected_at ? new Date(item.detected_at).toLocaleString() : "N/A",
+            timestamp: new Date(item.detected_at).getTime() || Date.now(),
+          };
+          
+          // Show result for this image
+          onImageProcessed(processedImage);
+          
+          // Show processing message
+          toast.info(`Đang xử lý ảnh ${i + 1}/${result.data.length}...`);
+          
+          // Wait for 2 seconds before processing next image
+          if (i < result.data.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+        
+        // Show final success message
+        toast.success(result.message || `Đã xử lý thành công ${result.total} ảnh!`);
+      } else {
+        // Show error message from API
+        toast.error(result.message || "Có lỗi xảy ra khi xử lý ảnh!");
       }
+    } catch (error) {
+      console.error("Error processing images:", error);
+      toast.error("Có lỗi xảy ra khi xử lý ảnh!");
+    } finally {
+      setIsProcessing(false);
+      setProgress(100);
     }
-
-    setIsProcessing(false);
   };
 
   const clearSelectedImages = () => {
     setSelectedImages([]);
-    if (singleFileInputRef.current) singleFileInputRef.current.value = "";
-    if (multipleFileInputRef.current) multipleFileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <Button onClick={handleSingleImageSelect} variant="outline">
-          Chèn 1 ảnh
-        </Button>
-        <Button onClick={handleMultipleImageSelect} variant="outline">
-          Chèn nhiều ảnh
+        <Button onClick={handleImageSelect} variant="outline">
+          Chọn ảnh
         </Button>
         <Button
           onClick={handleProcessImages}
@@ -98,25 +115,27 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
       </div>
 
       <Input
-        ref={singleFileInputRef}
+        ref={fileInputRef}
         type="file"
         accept="image/*"
-        onChange={handleSingleFileChange}
-        className="hidden"
-      />
-      <Input
-        ref={multipleFileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleMultipleFileChange}
+        onChange={handleFileChange}
         multiple
         className="hidden"
       />
 
       {isProcessing && (
-        <div className="space-y-2">
-          <p>Đang xử lý: {progress}%</p>
-          <Progress value={progress} className="h-2" />
+        <div className="w-full my-2">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div
+                className="bg-blue-500 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${Math.round(progress)}%` }}
+              />
+            </div>
+            <span className="font-semibold text-blue-700 w-10 text-right">
+              {Math.round(progress)}%
+            </span>
+          </div>
         </div>
       )}
 

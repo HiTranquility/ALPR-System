@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.router import api_router
+from app.api.router import api_router
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import webbrowser
@@ -10,9 +10,26 @@ import os
 
 def create_application() -> FastAPI:
     application = FastAPI(
-        title="ALPR APIs Service",
+        title="ALPR System API",
         version="1.0.0",
-        description="This is the APIs service for ALPR project",
+        description="""
+        # ALPR (Automatic License Plate Recognition) System API
+        
+        ## Overview
+        This API provides endpoints for license plate recognition and management.
+        
+        ## Features
+        * Upload and process license plate images
+        * Real-time plate recognition
+        * Plate information management
+        * Historical data tracking
+        
+        ## Authentication
+        All endpoints require authentication using API key.
+        
+        ## Rate Limiting
+        API calls are limited to 100 requests per minute per API key.
+        """,
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
@@ -20,6 +37,20 @@ def create_application() -> FastAPI:
             "name": "HiTranquility",
             "url": "https://github.com/HiTranquility",
             "email": "thebeyondtranquility@gmail.com"
+        },
+        license_info={
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        terms_of_service="https://github.com/HiTranquility/ALPR-System/blob/main/LICENSE",
+        swagger_ui_parameters={
+            "defaultModelsExpandDepth": -1,
+            "docExpansion": "none",
+            "filter": True,
+            "syntaxHighlight.theme": "monokai",
+            "tryItOutEnabled": True,
+            "displayRequestDuration": True,
+            "persistAuthorization": True
         }
     )
 
@@ -38,7 +69,7 @@ def create_application() -> FastAPI:
     application.mount("/static", StaticFiles(directory="static"), name="static")
 
     # Include routers
-    application.include_router(api_router, prefix="/api/v1")
+    application.include_router(api_router, prefix="/api")
 
     return application
 
