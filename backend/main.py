@@ -34,15 +34,10 @@ def create_application() -> FastAPI:
         redoc_url="/redoc",
         openapi_url="/openapi.json",
         contact={
-            "name": "HiTranquility",
+            "name": "Nguyễn Tấn Phát - 22110060",
             "url": "https://github.com/HiTranquility",
             "email": "thebeyondtranquility@gmail.com"
         },
-        license_info={
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        },
-        terms_of_service="https://github.com/HiTranquility/ALPR-System/blob/main/LICENSE",
         swagger_ui_parameters={
             "defaultModelsExpandDepth": -1,
             "docExpansion": "none",
