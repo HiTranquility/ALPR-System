@@ -198,7 +198,7 @@ def run_alpr(ori_bytes):
     full_text = get_plate_text_from_image(img_cv)
     full_text = full_text if (
         len(full_text) <= 11 and
-        len(re.findall(r'[^A-Z0-9]', full_text)) <= 2 and
+        # len(re.findall(r'[^A-Z0-9]', full_text)) <= 2 and
         len(re.findall(r'[A-Z]', full_text)) >= 1
     ) else ""
     plate_number = full_text
@@ -219,7 +219,7 @@ def run_alpr(ori_bytes):
             crop_text = get_plate_text_from_image(plate_crop)
             crop_text = crop_text if (
                 len(crop_text) <= 11 and
-                len(re.findall(r'[^A-Z0-9]', crop_text)) <= 2 and
+                # len(re.findall(r'[^A-Z0-9]', crop_text)) <= 2 and
                 len(re.findall(r'[A-Z]', crop_text)) >= 1
             ) else ""
             if len(crop_text) > len(plate_number):
@@ -228,8 +228,8 @@ def run_alpr(ori_bytes):
         else:
             enhanced_text, enhanced_img = enhanced_ocr(plate_crop)
             enhanced_text = enhanced_text if (
-                len(enhanced_text) <= 10 and
-                len(re.findall(r'[^A-Z0-9]', enhanced_text)) <= 2 and
+                len(enhanced_text) <= 11 and
+                # len(re.findall(r'[^A-Z0-9]', enhanced_text)) <= 2 and
                 len(re.findall(r'[A-Z]', enhanced_text)) >= 1
             ) else ""
             if len(enhanced_text) > len(plate_number):
