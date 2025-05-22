@@ -9,6 +9,8 @@ export interface ProcessedImage {
   detectionTime?: string;
   processingSpeed?: number;
   timestamp: number;
+  hasError?: boolean;
+  errorMessage?: string;
 }
 
 // Kiểu dữ liệu cho kết quả tìm kiếm

@@ -34,23 +34,35 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
 
   const handleProcessImages = async () => {
     if (selectedImages.length === 0) return;
-  
+
     setIsProcessing(true);
     setProgress(0);
-  
+
     try {
-      // Always use multiple image processing
-      const result = await plateService.uploadManyPlates(selectedImages);
-  
-      if (result.success) {
-        for (let i = 0; i < result.data.length; i++) {
-          const item = result.data[i];
-  
-          const currentProgress = ((i + 1) / result.data.length) * 100;
-          setProgress(currentProgress);
-  
-          if (result.success) {
-            // Create processed image data
+      // Process each image one by one to handle individual errors better
+      for (let i = 0; i < selectedImages.length; i++) {
+        const file = selectedImages[i];
+        const currentProgress = ((i + 1) / selectedImages.length) * 100;
+        setProgress(currentProgress);
+        
+        const isLastImage = i === selectedImages.length - 1;
+        const isSingleImage = selectedImages.length === 1;
+        
+        try {
+          // Chỉ hiện thông báo đang xử lý nếu còn nhiều ảnh
+          if (!isSingleImage) {
+            toast.info(`Đang xử lý ảnh ${i + 1}/${selectedImages.length}...`);
+          }
+          
+          // Xử lý từng ảnh một
+          const result = await plateService.uploadPlate(file);
+          
+          if (result.success && result.data.length > 0) {
+            const item = result.data[0];
+            
+            // Kiểm tra nếu ảnh không được xử lý đúng
+            const hasError = !item.plate_number || !item.crop_image_url;
+            
             const processedImage: ProcessedImage = {
               id: Date.now().toString() + i,
               originalImage: item.image_url,
@@ -59,37 +71,104 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
               processingSpeed: item.process_time,
               detectionTime: item.detected_at ? new Date(item.detected_at).toLocaleString() : "N/A",
               timestamp: new Date(item.detected_at).getTime() || Date.now(),
+              hasError: hasError,
+              errorMessage: hasError 
+                ? (isLastImage || isSingleImage) 
+                  ? "Không xử lý được ảnh" 
+                  : "Không xử lý được ảnh, chuyển qua ảnh kế tiếp"
+                : undefined
             };
-  
+            
             onImageProcessed(processedImage);
-            toast.success(`Ảnh ${i + 1}/${result.data.length} xử lý thành công!`);
+            
+            if (hasError) {
+              // Thông báo lỗi phù hợp với trường hợp ảnh cuối hoặc chỉ có 1 ảnh
+              if (isLastImage || isSingleImage) {
+                toast.error(`Ảnh không xử lý được`);
+              } else {
+                toast.error(`Ảnh ${i + 1}/${selectedImages.length} không xử lý được, chuyển qua ảnh kế tiếp.`);
+              }
+            } else {
+              // Hiển thị thông báo thành công kèm biển số
+              toast(
+                `Xử lý ảnh thành công!`,
+                {
+                  description: item.plate_number ? `Đã nhận diện biển số: ${item.plate_number}` : undefined,
+                  icon: "✅"
+                }
+              );
+            }
           } else {
-            // Show error for this image
-            toast.error(`Ảnh ${i + 1}: ${result.message || "Xử lý thất bại!"}`);
+            // API trả về lỗi hoặc không có dữ liệu
+            const processedImage: ProcessedImage = {
+              id: Date.now().toString() + i,
+              originalImage: URL.createObjectURL(file), // Dùng URL local vì không có URL từ server
+              croppedImage: undefined,
+              licensePlate: undefined,
+              processingSpeed: undefined,
+              detectionTime: new Date().toLocaleString(),
+              timestamp: Date.now(),
+              hasError: true,
+              errorMessage: (isLastImage || isSingleImage) 
+                ? "Không xử lý được ảnh" 
+                : "Không xử lý được ảnh, chuyển qua ảnh kế tiếp"
+            };
+            
+            onImageProcessed(processedImage);
+            
+            // Thông báo lỗi phù hợp với trường hợp ảnh cuối hoặc chỉ có 1 ảnh
+            if (isLastImage || isSingleImage) {
+              toast.error(`Ảnh không xử lý được`);
+            } else {
+              toast.error(`Ảnh ${i + 1}/${selectedImages.length} không xử lý được, chuyển qua ảnh kế tiếp.`);
+            }
           }
-  
-          // Show processing message
-          toast.info(`Đang xử lý ảnh ${i + 1}/${result.data.length}...`);
-  
-          // Wait for 2 seconds before processing next image
-          if (i < result.data.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+        } catch (error) {
+          console.error(`Error processing image ${i + 1}:`, error);
+          
+          // Vẫn tạo kết quả với thông báo lỗi
+          const processedImage: ProcessedImage = {
+            id: Date.now().toString() + i,
+            originalImage: URL.createObjectURL(file), // Dùng URL local vì không có URL từ server
+            croppedImage: undefined,
+            licensePlate: undefined,
+            processingSpeed: undefined,
+            detectionTime: new Date().toLocaleString(),
+            timestamp: Date.now(),
+            hasError: true,
+            errorMessage: (isLastImage || isSingleImage) 
+              ? "Không xử lý được ảnh" 
+              : "Không xử lý được ảnh, chuyển qua ảnh kế tiếp"
+          };
+          
+          onImageProcessed(processedImage);
+          
+          // Thông báo lỗi phù hợp với trường hợp ảnh cuối hoặc chỉ có 1 ảnh
+          if (isLastImage || isSingleImage) {
+            toast.error(`Ảnh không xử lý được`);
+          } else {
+            toast.error(`Ảnh ${i + 1}/${selectedImages.length} không xử lý được, chuyển qua ảnh kế tiếp.`);
           }
         }
-  
-        toast.success(result.message || `Đã xử lý xong ${result.total || result.data.length} ảnh!`);
-      } else {
-        toast.error(result.message || "Có lỗi xảy ra khi xử lý ảnh!");
+        
+        // Nếu chưa phải ảnh cuối cùng thì chờ 1s
+        if (!isLastImage) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      
+      // Chỉ hiển thị thông báo tổng kết nếu có nhiều hơn 1 ảnh
+      if (selectedImages.length > 1) {
+        toast.success(`Đã xử lý xong tất cả ${selectedImages.length} ảnh!`);
       }
     } catch (error) {
-      console.error("Error processing images:", error);
+      console.error("Error in overall image processing:", error);
       toast.error("Có lỗi xảy ra khi xử lý ảnh!");
     } finally {
       setIsProcessing(false);
       setProgress(100);
     }
   };
-  
 
   const clearSelectedImages = () => {
     setSelectedImages([]);
