@@ -49,7 +49,7 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
           const currentProgress = ((i + 1) / result.data.length) * 100;
           setProgress(currentProgress);
   
-          if (item.success) {
+          if (result.success) {
             // Create processed image data
             const processedImage: ProcessedImage = {
               id: Date.now().toString() + i,
@@ -65,7 +65,7 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
             toast.success(`Ảnh ${i + 1}/${result.data.length} xử lý thành công!`);
           } else {
             // Show error for this image
-            toast.error(`Ảnh ${i + 1}: ${item.message || "Xử lý thất bại!"}`);
+            toast.error(`Ảnh ${i + 1}: ${result.message || "Xử lý thất bại!"}`);
           }
   
           // Show processing message
