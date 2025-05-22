@@ -34,50 +34,51 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
 
   const handleProcessImages = async () => {
     if (selectedImages.length === 0) return;
-
+  
     setIsProcessing(true);
     setProgress(0);
-
+  
     try {
       // Always use multiple image processing
       const result = await plateService.uploadManyPlates(selectedImages);
-      
+  
       if (result.success) {
-        // Process each image sequentially with delay
         for (let i = 0; i < result.data.length; i++) {
           const item = result.data[i];
-          
-          // Update progress for current image
+  
           const currentProgress = ((i + 1) / result.data.length) * 100;
           setProgress(currentProgress);
-          
-          // Create processed image data
-          const processedImage: ProcessedImage = {
-            id: Date.now().toString() + i,
-            originalImage: item.image_url,
-            croppedImage: item.crop_image_url,
-            licensePlate: item.plate_number,
-            processingSpeed: item.process_time,
-            detectionTime: item.detected_at ? new Date(item.detected_at).toLocaleString() : "N/A",
-            timestamp: new Date(item.detected_at).getTime() || Date.now(),
-          };
-          
-          // Show result for this image
-          onImageProcessed(processedImage);
-          
+  
+          if (item.success) {
+            // Create processed image data
+            const processedImage: ProcessedImage = {
+              id: Date.now().toString() + i,
+              originalImage: item.image_url,
+              croppedImage: item.crop_image_url,
+              licensePlate: item.plate_number,
+              processingSpeed: item.process_time,
+              detectionTime: item.detected_at ? new Date(item.detected_at).toLocaleString() : "N/A",
+              timestamp: new Date(item.detected_at).getTime() || Date.now(),
+            };
+  
+            onImageProcessed(processedImage);
+            toast.success(`Ảnh ${i + 1}/${result.data.length} xử lý thành công!`);
+          } else {
+            // Show error for this image
+            toast.error(`Ảnh ${i + 1}: ${item.message || "Xử lý thất bại!"}`);
+          }
+  
           // Show processing message
           toast.info(`Đang xử lý ảnh ${i + 1}/${result.data.length}...`);
-          
+  
           // Wait for 2 seconds before processing next image
           if (i < result.data.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 2000));
           }
         }
-        
-        // Show final success message
-        toast.success(result.message || `Đã xử lý thành công ${result.total} ảnh!`);
+  
+        toast.success(result.message || `Đã xử lý xong ${result.total || result.data.length} ảnh!`);
       } else {
-        // Show error message from API
         toast.error(result.message || "Có lỗi xảy ra khi xử lý ảnh!");
       }
     } catch (error) {
@@ -88,6 +89,7 @@ export function ImageUploadSection({ onImageProcessed }: ImageUploadSectionProps
       setProgress(100);
     }
   };
+  
 
   const clearSelectedImages = () => {
     setSelectedImages([]);
