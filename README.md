@@ -25,7 +25,7 @@ cd ALPR-System/backend
 python main.py
 ```
 - API backend: http://localhost:8000/docs
-- Giao diện web: http://localhost (nếu cấu hình nginx)
+- Giao diện web: 
 
 ### Chạy frontend riêng (phát triển)
 ```bash
@@ -40,6 +40,3 @@ bun run dev # hoặc npm run dev
 - **MSSV:** 22110060
 - **Github:** [HiTranquility](https://github.com/HiTranquility)
 - **Email:** thebeyondtranquility@gmail.com
-
-## License
-MIT
