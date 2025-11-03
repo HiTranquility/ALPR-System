@@ -12,7 +12,6 @@
 ## Công nghệ sử dụng
 - **Backend:** Python, FastAPI, YOLOv8, EasyOCR, MySQL, Docker
 - **Frontend:** React, TypeScript, Vite, TailwindCSS, Radix UI
-- **Khác:** Docker Compose, Nginx (reverse proxy)
 
 ## Hướng dẫn chạy nhanh
 ### Yêu cầu
